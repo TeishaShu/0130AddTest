@@ -4,13 +4,9 @@ const CustomInputNumber = (props) => {
   const { min = 0, max, step = 1, name, value, disabled, onChange, onBlur } = props;
   const [inputNumber, setInputNumber] = useState(value || 0);
   const [intervalId, setIntervalId] = useState(null);
-  const [isMinDisabled, setIsMinDisabled] = useState(false);
-  const [isMaxDisabled, setIsMaxDisabled] = useState(false);
   const hasBlurredRef = useRef(false);
-
-  const minDisabled = useMemo(() => value <= min || disabled, [value, min, disabled])
-  const maxDisabled = useMemo(() => value >= max || disabled, [value, max, disabled])
-
+  const minDisabled = useMemo(() => inputNumber <= min || disabled, [inputNumber, min, disabled])
+  const maxDisabled = useMemo(() => inputNumber >= max || disabled, [inputNumber, max, disabled])
 
   useEffect(() => {
     if (minDisabled || maxDisabled) {
@@ -18,12 +14,52 @@ const CustomInputNumber = (props) => {
     }
   }, [minDisabled, maxDisabled]);
 
-  const handleChange = (event, type) => {
+  const handleChangeInput = (event) => {
+    const value = parseInt(event.target.value, 10) || 0;
+    setInputNumber(value)
+  }
+
+  const handleIncrement = (event) => {
+    updateInputNumber(event, inputNumber + step)
+    setInputNumber(inputNumber + step)
+
+    startAccumulating(() => setInputNumber(pre => {
+      const value = Number(pre) + step;
+      console.log({ value, min }, value <= min);
+      if (value <= min) {
+        updateInputNumber(event)
+      }
+      return value
+    }))
+  }
+
+  const handleDecrement = (event) => {
+    updateInputNumber(event, inputNumber - step)
+    setInputNumber(inputNumber - step)
+
+    startAccumulating(() => setInputNumber(pre => {
+      const value = Number(pre) - step;
+      if (value >= max) {
+        updateInputNumber(event)
+      }
+      return value
+    }))
+  }
+
+  const updateInputNumber = (event, updateNum) => {
+    event.target.value = updateNum;
+    event.target.name = name;
+    console.log("updateInputNumber", { updateNum, name });
+    onChange(event)
+  }
+
+  const handleChange = (updateNum, event) => {
     setInputNumber(pre => {
-      let updateNum = 0;
-      if (type === "input") updateNum = parseInt(event.target.value, 10) || 0;
-      if (type === "plus") updateNum = Number(pre) + step;
-      if (type === "minus") updateNum = Number(pre) - step;
+      // let updateNum = 0;
+      // if (type === "input") updateNum = parseInt(event.target.value, 10) || 0;
+      // if (type === "plus") updateNum = Number(pre) + step;
+      // if (type === "minus") updateNum = Number(pre) - step;
+
       // number over setting
       console.log(type, updateNum);
       if (updateNum < min || updateNum > max) {
@@ -43,54 +79,41 @@ const CustomInputNumber = (props) => {
       }
 
       // stop setInterval if already min or max
-      // setIsMinDisabled(updateNum <= min);
-      // setIsMaxDisabled(updateNum >= max);
-
-
       if (updateNum <= min || updateNum >= max) {
         stopAccumulating()
-        // setIsMinDisabled(true);
       }
-      // if (updateNum === max) {
-      //   handleMouseUp()
-      //   setIsMaxDisabled(true);
-      // }
 
       return updateNum;
     })
   }
 
-  const handleMouseDown = (event, type) => {
-    handleChange(event, type); // click once
-    //多個判斷:按太久開始累加
-    const id = setInterval(() => handleChange(event, type), 300);
+  const startAccumulating = (fun) => {
+    const id = setInterval(() => fun(), 300);
     setIntervalId(id);
   }
 
-  const stopAccumulating = () => {//停止累加
+  const stopAccumulating = () => {
     if (intervalId !== null) {
       clearInterval(intervalId);
       setIntervalId(null);
-      return
     }
   }
 
-  const handleOnBlur = (event, updateNum) => {
+  const handleOnBlur = (event) => {
     stopAccumulating()
     event.target.name = name;
-    event.target.value = updateNum || Number(inputNumber);
-    console.log("handleOnBlur", { name, updateNum, inputNumber }, updateNum || Number(inputNumber));
+    event.target.value = Number(inputNumber);
     onBlur(event)
   }
 
   return (
-    <div className="inputBox" onBlur={() => handleOnBlur({ target: { name, value: inputNumber } })}>
+    <div className="inputBox">
       <button
         type="button"
         disabled={minDisabled}
-        onMouseDown={(event) => handleMouseDown(event, "minus")}
+        onMouseDown={handleDecrement}
         onMouseUp={stopAccumulating}
-        // onMouseLeave={handleMouseUp}
+        onBlur={handleOnBlur}
         className={disabled ? "disabled" : ""}
       >
         <i className="fa fa-solid fa-minus"></i>
@@ -101,14 +124,15 @@ const CustomInputNumber = (props) => {
         value={inputNumber}
         min={min}
         max={max}
-        onChange={event => handleChange(event, "input")}
+        onChange={handleChangeInput}
+        onBlur={handleOnBlur}
       />
       <button
         type="button"
         disabled={maxDisabled}
-        onMouseDown={(event) => handleMouseDown(event, "plus")}
+        onMouseDown={handleIncrement}
         onMouseUp={stopAccumulating}
-        // onMouseLeave={handleMouseUp}
+        onBlur={handleOnBlur}
         className={disabled ? "disabled" : ""}
       >
         <i className="fa fa-solid fa-plus"></i>

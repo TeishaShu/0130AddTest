@@ -23,12 +23,13 @@ const RoomAllocation = (props) => {
     // console.log("New value:", { value, name, ui_id },orderData)
     // You can add logic here if needed
     // For now, no specific logic is applied
+    console.log("CHANGE",{ value, name, ui_id });
     return
   }
   const handleOnBlur = (event, ui_id) => { // Final value
     const value = event.target.value;
     const name = event.target.name;
-
+    console.log("blur");
     setOrderData(preOrderData => {
       const arrayIdx = preOrderData.findIndex(el => el.ui_id === ui_id)
       const updateData = JSON.parse(JSON.stringify(preOrderData))
@@ -53,6 +54,7 @@ const RoomAllocation = (props) => {
       <div className="title">住客人數: {guest}人/{room}房</div>
       <div className="reminderMessage">尚未分配人數：{remainGuest}人</div>
       {orderData.map(el => {
+        const roomPeople = 4;
         return (
           <div className="roomWrapper" key={el.ui_id}>
             <div className="title">房間：{Number(el.adult) + Number(el.child)}人</div>
@@ -63,7 +65,7 @@ const RoomAllocation = (props) => {
               </div>
               <CustomInputNumber
                 min={1}
-                max={Math.min(4, remainGuest)}
+                max={Math.min(remainGuest, roomPeople - el.child)}
                 step={1}
                 name="adult"
                 value={el.adult}
@@ -78,7 +80,7 @@ const RoomAllocation = (props) => {
               </div>
               <CustomInputNumber
                 min={0}
-                max={Math.min(4, remainGuest)}
+                max={Math.min(remainGuest, roomPeople - el.adult)}
                 step={1}
                 name="child"
                 value={el.child}
