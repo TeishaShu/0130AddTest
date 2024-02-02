@@ -1,11 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 const CustomInputNumber = (props) => {
   const { min = 0, max, step = 1, name, value, disabled, onChange, onBlur } = props;
   const [inputNumber, setInputNumber] = useState(value || 0);
   const [intervalId, setIntervalId] = useState(null);
-  const hasBlurredRef = useRef(false);
-  const minDisabled = useMemo(() => inputNumber <= min || disabled, [inputNumber, min, disabled])
+  const minDisabled = useMemo(() => inputNumber <= min, [inputNumber, min])
   const maxDisabled = useMemo(() => inputNumber >= max || disabled, [inputNumber, max, disabled])
 
   useEffect(() => {
@@ -20,27 +19,25 @@ const CustomInputNumber = (props) => {
   }
 
   const handleIncrement = (event) => {
-    updateInputNumber(event, inputNumber + step)
-    setInputNumber(inputNumber + step)
+    const updateValue = Math.min(max, inputNumber + step)
+    updateInputNumber(event, updateValue)
+    setInputNumber(updateValue)
 
     startAccumulating(() => setInputNumber(pre => {
-      const value = Number(pre) + step;
-      if (value <= max) {
-        updateInputNumber(event, value)
-      }
+      const value = Math.min(max, pre + step);
+      updateInputNumber(event, value)
       return value
     }))
   }
 
   const handleDecrement = (event) => {
-    updateInputNumber(event, inputNumber - step)
-    setInputNumber(inputNumber - step)
+    const updateValue = Math.max(min, inputNumber - step)
+    updateInputNumber(event, updateValue)
+    setInputNumber(updateValue)
 
     startAccumulating(() => setInputNumber(pre => {
-      const value = Number(pre) - step;
-      if (value >= min) {
-        updateInputNumber(event, value)
-      }
+      const value = Math.max(min, pre - step);
+      updateInputNumber(event, value)
       return value
     }))
   }
@@ -49,40 +46,6 @@ const CustomInputNumber = (props) => {
     event.target.value = updateNum;
     event.target.name = name;
     onChange(event)
-  }
-
-  const handleChange = (updateNum, event) => {
-    setInputNumber(pre => {
-      // let updateNum = 0;
-      // if (type === "input") updateNum = parseInt(event.target.value, 10) || 0;
-      // if (type === "plus") updateNum = Number(pre) + step;
-      // if (type === "minus") updateNum = Number(pre) - step;
-
-      // number over setting
-      console.log(type, updateNum);
-      if (updateNum < min || updateNum > max) {
-        updateNum = updateNum > max ? pre : min;
-        event.target.value = updateNum;
-        event.target.name = name;
-        stopAccumulating()
-        if (!hasBlurredRef.current) {
-          handleOnBlur(event, updateNum);
-          hasBlurredRef.current = true;
-        }
-
-      } else {
-        event.target.value = updateNum;
-        event.target.name = name;
-        onChange(event)
-      }
-
-      // stop setInterval if already min or max
-      if (updateNum <= min || updateNum >= max) {
-        stopAccumulating()
-      }
-
-      return updateNum;
-    })
   }
 
   const startAccumulating = (fun) => {
