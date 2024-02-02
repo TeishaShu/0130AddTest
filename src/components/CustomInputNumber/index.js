@@ -25,9 +25,8 @@ const CustomInputNumber = (props) => {
 
     startAccumulating(() => setInputNumber(pre => {
       const value = Number(pre) + step;
-      console.log({ value, min }, value <= min);
-      if (value <= min) {
-        updateInputNumber(event)
+      if (value <= max) {
+        updateInputNumber(event, value)
       }
       return value
     }))
@@ -39,8 +38,8 @@ const CustomInputNumber = (props) => {
 
     startAccumulating(() => setInputNumber(pre => {
       const value = Number(pre) - step;
-      if (value >= max) {
-        updateInputNumber(event)
+      if (value >= min) {
+        updateInputNumber(event, value)
       }
       return value
     }))
@@ -49,7 +48,6 @@ const CustomInputNumber = (props) => {
   const updateInputNumber = (event, updateNum) => {
     event.target.value = updateNum;
     event.target.name = name;
-    console.log("updateInputNumber", { updateNum, name });
     onChange(event)
   }
 
@@ -108,6 +106,7 @@ const CustomInputNumber = (props) => {
 
   return (
     <div className="inputBox">
+      {max}
       <button
         type="button"
         disabled={minDisabled}
