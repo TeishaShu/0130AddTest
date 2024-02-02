@@ -69,7 +69,6 @@ const CustomInputNumber = (props) => {
 
   return (
     <div className="inputBox">
-      {max}
       <button
         type="button"
         disabled={minDisabled}
