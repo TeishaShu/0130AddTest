@@ -13,7 +13,7 @@ body {
 
 .reminderMessage {
   background: #e9f9fc;
-  border:1px solid #bcefff;
+  border: 1px solid #bcefff;
   padding: 13px;
   border-radius: 5px;
 }
@@ -35,6 +35,12 @@ body {
     border-color: $blue;
     color: $blue;
     cursor: pointer;
+
+    &:disabled {
+      color: $gray;
+      border-color: $gray;
+      cursor: not-allowed;
+    }
   }
 
   input {
