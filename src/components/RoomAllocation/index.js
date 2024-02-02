@@ -45,7 +45,7 @@ const RoomAllocation = (props) => {
       <div className="title">住客人數: {guest}人/{room}房</div>
       <div className="reminderMessage">尚未分配人數：{remainGuest}人</div>
       {orderData.map(el => {
-        const roomPeople = 20;
+        const roomPeople = 4;
         const adultMin = 1;
         const childMin = 0;
         const adultStep = 1;
